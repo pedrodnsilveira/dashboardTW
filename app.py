@@ -1,55 +1,52 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 
-st.set_page_config(page_title="Dashboard TW Conquistas", layout="wide")
-st.title("📊 Dashboard de Conquistas - Últimas 6h")
+st.set_page_config(page_title="Dashboard Conquistas", layout="wide")
 
-# Lê CSV
-df = pd.read_csv("ennoblements.csv")
+st.title("📊 Dashboard de Conquistas (TWStats)")
 
-# Certifique-se que os valores são numéricos
-df['total'] = pd.to_numeric(df['total'], errors='coerce').fillna(0)
+# --- Carregar CSV ---
+try:
+    df = pd.read_csv("ennoblements.csv")
+except FileNotFoundError:
+    st.error("❌ Arquivo ennoblements.csv não encontrado. Rode primeiro o script Node (ennoblements.js).")
+    st.stop()
 
-# Totais por conquistador
-totais = df.groupby("conqueror")["total"].sum().reset_index().sort_values("total", ascending=False)
+# --- Sidebar ---
+st.sidebar.header("Filtros")
+conquerors = st.sidebar.multiselect("Filtrar por Conquistador", df["conqueror"].unique())
+tribos_alvo = st.sidebar.multiselect("Filtrar por Tribo Alvo", df["tribo_name"].dropna().unique())
 
-st.subheader("Total de conquistas por Conquistador")
-st.dataframe(totais)
+filtro = df.copy()
+if conquerors:
+    filtro = filtro[filtro["conqueror"].isin(conquerors)]
+if tribos_alvo:
+    filtro = filtro[filtro["tribo_name"].isin(tribos_alvo)]
 
-# Gráfico de barras
-chart = alt.Chart(totais).mark_bar().encode(
-    x=alt.X("total", title="Conquistas"),
-    y=alt.Y("conqueror", sort="-x"),
-    tooltip=["conqueror", "total"]
-).properties(height=400)
+# --- Tabela geral ---
+st.subheader("Resumo por Conquistador")
+totais = (
+    filtro.groupby(["conqueror", "tribo_conqueror"], dropna=False)[["total", "barbaros", "players"]]
+    .max()
+    .reset_index()
+    .sort_values("total", ascending=False)
+)
+st.dataframe(totais, use_container_width=True)
 
-st.altair_chart(chart, use_container_width=True)
+# --- Tabela por tribo alvo ---
+st.subheader("Conquistas por Tribo Alvo")
+tribos = (
+    filtro.groupby(["conqueror", "tribo_name"], dropna=False)["tribo_count"]
+    .sum()
+    .reset_index()
+    .sort_values("tribo_count", ascending=False)
+)
+st.dataframe(tribos, use_container_width=True)
 
-# Detalhes: tribo / bárbaros / player isolado
-st.subheader("Detalhamento por tipo de alvo")
-# Agrupa por conquistador + tipo de alvo
-detalhes = []
+# --- Gráficos ---
+st.subheader("📈 Ranking de Conquistadores")
+st.bar_chart(totais.set_index("conqueror")["total"])
 
-for idx, row in df.iterrows():
-    # linha geral
-    detalhes.append({
-        "conqueror": row['conqueror'],
-        "loser_type": "barbaros",
-        "count": row['barbaros']
-    })
-    detalhes.append({
-        "conqueror": row['conqueror'],
-        "loser_type": "players",
-        "count": row['players']
-    })
-    # linhas por tribo
-    if pd.notna(row['tribo_name']):
-        detalhes.append({
-            "conqueror": row['conqueror'],
-            "loser_type": row['tribo_name'],
-            "count": row['tribo_count']
-        })
+st.subheader("🏹 Conquistas por Tribo Alvo")
+st.bar_chart(tribos.set_index("tribo_name")["tribo_count"])
 
-df_detalhes = pd.DataFrame(detalhes)
-st.dataframe(df_detalhes)
