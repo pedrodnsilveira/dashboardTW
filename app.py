@@ -10,35 +10,36 @@ CSV_PATH = "ennoblements.csv"
 try:
     df = pd.read_csv(CSV_PATH, sep=";")
 
-    # Normaliza Aldeias de Bárbaros
-    df["conquistado_tribo"] = df["conquistado_tribo"].replace({"": "Aldeias de Bárbaros"})
-
     st.subheader("Dados Carregados")
     st.dataframe(df)
 
     # -------------------------
-    # Conquistas por Jogador
+    # Filtra conquistas de Aldeias de Bárbaros
+    # -------------------------
+    df_barbaros = df[df["conquistadoNome"].str.contains("Aldeias de Bárbaros", case=False)]
+
+    # -------------------------
+    # Conquistas por Jogador (incluindo coluna de Bárbaros)
     # -------------------------
     conquistas_por_jogador = df.groupby("conquistador_nome").size().reset_index(name="total")
-    # Quantidade de Aldeias de Bárbaros conquistadas por jogador
-    barbaros_por_jogador = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"].groupby("conquistador_nome").size().reset_index(name="barbaros")
-    # Mescla as informações
+    barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="barbaros")
     conquistas_por_jogador = conquistas_por_jogador.merge(barbaros_por_jogador, on="conquistador_nome", how="left").fillna(0)
     conquistas_por_jogador["barbaros"] = conquistas_por_jogador["barbaros"].astype(int)
     conquistas_por_jogador = conquistas_por_jogador.sort_values(by="total", ascending=False)
 
     # -------------------------
-    # Conquistas por Tribo
+    # Conquistas por Tribo (incluindo coluna de Bárbaros)
     # -------------------------
     conquistas_por_tribo = df.groupby("conquistador_tribo").size().reset_index(name="total")
-    # Quantidade de Aldeias de Bárbaros conquistadas por tribo
-    barbaros_por_tribo = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"].groupby("conquistador_tribo").size().reset_index(name="barbaros")
+    barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="barbaros")
     conquistas_por_tribo = conquistas_por_tribo.merge(barbaros_por_tribo, on="conquistador_tribo", how="left").fillna(0)
     conquistas_por_tribo["barbaros"] = conquistas_por_tribo["barbaros"].astype(int)
     conquistas_por_tribo = conquistas_por_tribo.sort_values(by="total", ascending=False)
 
+    # -------------------------
+    # Gráficos de Pizza para Jogador e Tribo
+    # -------------------------
     col1, col2 = st.columns(2)
-
     with col1:
         st.subheader("🏆 Conquistas por Jogador")
         fig1 = px.pie(conquistas_por_jogador, values="total", names="conquistador_nome", title="Distribuição de Conquistas por Jogador")
@@ -52,7 +53,7 @@ try:
         st.dataframe(conquistas_por_tribo)
 
     # -------------------------
-    # Conquistas de Jogador por Tribo
+    # Conquistas de Jogadores por Tribo
     # -------------------------
     st.subheader("👥 Conquistas de Jogadores por Tribo")
     conquistas_jogador_tribo = df.groupby(["conquistador_tribo", "conquistador_nome"]).size().reset_index(name="total")
@@ -81,11 +82,11 @@ try:
     # Conquistas de Aldeias de Bárbaros
     # -------------------------
     st.subheader("⚔️ Conquistas de Aldeias de Bárbaros")
-    df_barbaros = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"]
 
+    # Por jogador
     barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="total")
     barbaros_por_jogador = barbaros_por_jogador.sort_values(by="total", ascending=False)
-
+    # Por tribo
     barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="total")
     barbaros_por_tribo = barbaros_por_tribo.sort_values(by="total", ascending=False)
 
