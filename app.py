@@ -21,7 +21,8 @@ try:
     # -------------------------
     # Conquistas por Jogador (incluindo coluna de Bárbaros)
     # -------------------------
-    conquistas_por_jogador = df.groupby("conquistador_nome").size().reset_index(name="total")
+    #conquistas_por_jogador = df.groupby("conquistador_nome").size().reset_index(name="total")
+    conquistas_por_jogador = df.groupby(["conquistador_tribo", "conquistador_nome"]).size().reset_index(name="total")
     barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="barbaros")
     conquistas_por_jogador = conquistas_por_jogador.merge(barbaros_por_jogador, on="conquistador_nome", how="left").fillna(0)
     conquistas_por_jogador["barbaros"] = conquistas_por_jogador["barbaros"].astype(int)
