@@ -3,14 +3,15 @@ import pandas as pd
 import plotly.express as px
 
 st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
-
 st.title("📊 Dashboard de Conquistas - Tribal Wars")
 
-# Caminho do CSV exportado pelo Node
 CSV_PATH = "ennoblements.csv"
 
 try:
     df = pd.read_csv(CSV_PATH, sep=";")
+
+    # Normaliza Aldeias de Bárbaros
+    df["conquistado_tribo"] = df["conquistado_tribo"].replace({"": "Aldeias de Bárbaros"})
 
     st.subheader("Dados Carregados")
     st.dataframe(df)
@@ -27,7 +28,6 @@ try:
     conquistas_por_tribo = df.groupby("conquistador_tribo").size().reset_index(name="total")
     conquistas_por_tribo = conquistas_por_tribo.sort_values(by="total", ascending=False)
 
-    # Layout em colunas
     col1, col2 = st.columns(2)
 
     with col1:
@@ -58,7 +58,7 @@ try:
     # -------------------------
     # Conquistas de Tribos por Tribo
     # -------------------------
-    st.subheader("🏹 Conquistas de Tribos sobre Outras Tribos (incluindo Bárbaros)")
+    st.subheader("🏹 Conquistas de Tribos sobre Outras Tribos")
     conquistas_tribo_vs_tribo = df.groupby(["conquistador_tribo", "conquistado_tribo"]).size().reset_index(name="total")
     st.dataframe(conquistas_tribo_vs_tribo.sort_values(by="total", ascending=False))
 
@@ -67,6 +67,33 @@ try:
                       values="total",
                       title="Mapa de Conquistas: Tribo Conquistadora → Tribo Conquistada")
     st.plotly_chart(fig4, use_container_width=True)
+
+    # -------------------------
+    # Conquistas de Aldeias de Bárbaros
+    # -------------------------
+    st.subheader("⚔️ Conquistas de Aldeias de Bárbaros")
+    df_barbaros = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"]
+
+    # Por jogador
+    barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="total")
+    barbaros_por_jogador = barbaros_por_jogador.sort_values(by="total", ascending=False)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Jogadores que conquistaram Bárbaros")
+        fig5 = px.pie(barbaros_por_jogador, values="total", names="conquistador_nome", title="Distribuição de Conquistas de Bárbaros por Jogador")
+        st.plotly_chart(fig5, use_container_width=True)
+        st.dataframe(barbaros_por_jogador)
+
+    # Por tribo
+    barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="total")
+    barbaros_por_tribo = barbaros_por_tribo.sort_values(by="total", ascending=False)
+
+    with col2:
+        st.subheader("Tribo que conquistou Bárbaros")
+        fig6 = px.pie(barbaros_por_tribo, values="total", names="conquistador_tribo", title="Distribuição de Conquistas de Bárbaros por Tribo")
+        st.plotly_chart(fig6, use_container_width=True)
+        st.dataframe(barbaros_por_tribo)
 
     # -------------------------
     # Ranking detalhado
