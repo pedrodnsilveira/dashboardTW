@@ -34,8 +34,9 @@ try:
 
     df["conquistado_tribo_ajustado"] = df.apply(ajustar_tribo, axis=1)
 
-    # Remover conquistas da própria tribo
-    df_filtrado = df[df["conquistador_tribo"] != df["conquistado_tribo_ajustado"]]
+    # Remover conquistas do próprio jogador na própria tribo
+    df_filtrado = df[~((df["conquistado_nome"] == df["conquistador_nome"]) &
+                    (df["conquistado_tribo_ajustado"] == df["conquistador_tribo"]))]
 
     # Agrupar
     resumo = (
@@ -48,63 +49,37 @@ try:
     st.title("Resumo de Conquistas por jogador")
     st.dataframe(resumo)
 
-    
+    # -------------------------
+    # Ignorar conquistas do próprio jogador e da própria tribo
+    # -------------------------
+    #df_filtrado = df[~((df["conquistado_nome"] == df["conquistador_nome"]) &
+    #                (df["conquistado_tribo"] == df["conquistador_tribo"]))]
 
-    # Ignorar conquistas da própria tribo
-    #df_filtrado = df[df["conquistador_tribo"] != df["conquistado_tribo_ajustado"]]
-
+    # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
+    # -------------------------
     df_barbaros = df_filtrado[df_filtrado["conquistado_nome"].str.contains("Aldeias de Bárbaros", case=False)]
 
-    # Conquistas por jogador (incluindo coluna de Bárbaros)
-    conquistas_por_jogador = (
-        df_filtrado.groupby(["conquistador_tribo", "conquistador_nome"])
-        .size()
-        .reset_index(name="total")
-    )
-
-    barbaros_por_jogador = (
-        df_barbaros.groupby("conquistador_nome")
-        .size()
-        .reset_index(name="barbaros")
-    )
-
-    # Merge com preenchimento de NaN
+    # -------------------------
+    # Conquistas por Jogador (incluindo coluna de Bárbaros)
+    # -------------------------
+    conquistas_por_jogador = df_filtrado.groupby(["conquistador_tribo", "conquistador_nome"]) \
+        .size().reset_index(name="total")
+    barbaros_por_jogador = df_barbaros.groupby("conquistador_nome") \
+        .size().reset_index(name="barbaros")
     conquistas_por_jogador = conquistas_por_jogador.merge(barbaros_por_jogador, on="conquistador_nome", how="left").fillna(0)
     conquistas_por_jogador["barbaros"] = conquistas_por_jogador["barbaros"].astype(int)
-
-    # Ordena pelo total
     conquistas_por_jogador = conquistas_por_jogador.sort_values(by="total", ascending=False)
-
-    # -------------------------
-    # Limita aos 5 primeiros e soma o resto em 'Outros'
-    # -------------------------
-    top5 = conquistas_por_jogador.head(5)
-    outros = conquistas_por_jogador.iloc[5:].sum(numeric_only=True)
-    if not outros.empty:
-        outros_row = pd.DataFrame({
-            "conquistador_tribo": ["Outros"],
-            "conquistador_nome": ["Outros"],
-            "total": [int(outros["total"])],
-            "barbaros": [int(outros["barbaros"])]
-        })
-        top5 = pd.concat([top5, outros_row], ignore_index=True)
-
-    # Agora top5 é o DataFrame que você pode usar no gráfico
-
-
-
-
-
 
     # -------------------------
     # Conquistas por Tribo (incluindo coluna de Bárbaros)
     # -------------------------
-    conquistas_por_tribo = df.groupby("conquistador_tribo").size().reset_index(name="total")
+    conquistas_por_tribo = df_filtrado.groupby("conquistador_tribo").size().reset_index(name="total")
     barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="barbaros")
     conquistas_por_tribo = conquistas_por_tribo.merge(barbaros_por_tribo, on="conquistador_tribo", how="left").fillna(0)
     conquistas_por_tribo["barbaros"] = conquistas_por_tribo["barbaros"].astype(int)
     conquistas_por_tribo = conquistas_por_tribo.sort_values(by="total", ascending=False)
+
 
     # -------------------------
     # Gráficos de Pizza para Jogador e Tribo
