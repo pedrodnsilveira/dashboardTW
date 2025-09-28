@@ -1,15 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-#import os
-#from datetime import datetime, timedelta
 
-#ts = os.path.getmtime("ennoblements.csv")
 #dthr = (datetime.fromtimestamp(ts) - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")
 
 st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
 st.title("📊 Dashboard de Conquistas - Tribal Wars:Br 134")
-#st.subheader("Última atualização: " + str(dthr))
 
 CSV_PATH = "ennoblements.csv"
 
@@ -22,7 +18,7 @@ try:
     # Primeira e última data
     primeira_data = df['data'].min()
     ultima_data = df['data'].max()
-    st.subheader("Período: " + str(primeira_data) + " à " + str(ultima_data))
+    st.subheader("Período: " + str(primeira_data.strftime("%d/%m/%Y %H:%M:%S") + " à " + str(ultima_data.strftime("%d/%m/%Y %H:%M:%S"))
 
     # -------------------------
     # Conquistas por Jogador (incluindo jogadores sem tribo e aldeias bb)
