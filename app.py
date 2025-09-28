@@ -35,6 +35,10 @@ try:
         .reset_index(name="quantidade_conquistas")
     )
 
+    # Mostrar no Streamlit
+    st.title("Resumo de Conquistas")
+    st.dataframe(resumo)
+
 
     # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
