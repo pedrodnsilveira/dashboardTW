@@ -1,13 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os, datetime
+import os, datetime, timedelta
 
 ts = os.path.getmtime("ennoblements.csv")
+dthr = (datetime.datetime.fromtimestamp(ts) - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")
+
 
 st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
 st.title("📊 Dashboard de Conquistas - Tribal Wars:Br 134")
-st.subheader("Última atualização: " + str(datetime.datetime.fromtimestamp(ts)))
+st.subheader("Última atualização: " + str(dthr))
 
 CSV_PATH = "ennoblements.csv"
 
