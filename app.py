@@ -22,7 +22,7 @@ try:
     # Primeira e última data
     primeira_data = df['data'].min()
     ultima_data = df['data'].max()
-    st.subheader("Período: " + primeira_data + " à " + ultima_data)
+    st.subheader("Período: " + str(primeira_data) + " à " + str(ultima_data))
 
     # -------------------------
     # Conquistas por Jogador (incluindo jogadores sem tribo e aldeias bb)
