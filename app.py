@@ -16,7 +16,7 @@ try:
     # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
     # -------------------------
-    df_barbaros = df[df["conquistadoNome"].str.contains("Aldeias de Bárbaros", case=False)]
+    df_barbaros = df[df["conquistado_nome"].str.contains("Aldeias de Bárbaros", case=False)]
 
     # -------------------------
     # Conquistas por Jogador (incluindo coluna de Bárbaros)
