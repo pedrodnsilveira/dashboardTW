@@ -46,7 +46,7 @@ try:
     )
 
     # Mostrar no Streamlit
-    st.title("Resumo de Conquistas por jogador")
+    st.subheader("Resumo de Conquistas por jogador")
     st.dataframe(resumo)
 
 
