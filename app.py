@@ -20,12 +20,21 @@ try:
     # Conquistas por Jogador
     # -------------------------
     conquistas_por_jogador = df.groupby("conquistador_nome").size().reset_index(name="total")
+    # Quantidade de Aldeias de Bárbaros conquistadas por jogador
+    barbaros_por_jogador = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"].groupby("conquistador_nome").size().reset_index(name="barbaros")
+    # Mescla as informações
+    conquistas_por_jogador = conquistas_por_jogador.merge(barbaros_por_jogador, on="conquistador_nome", how="left").fillna(0)
+    conquistas_por_jogador["barbaros"] = conquistas_por_jogador["barbaros"].astype(int)
     conquistas_por_jogador = conquistas_por_jogador.sort_values(by="total", ascending=False)
 
     # -------------------------
     # Conquistas por Tribo
     # -------------------------
     conquistas_por_tribo = df.groupby("conquistador_tribo").size().reset_index(name="total")
+    # Quantidade de Aldeias de Bárbaros conquistadas por tribo
+    barbaros_por_tribo = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"].groupby("conquistador_tribo").size().reset_index(name="barbaros")
+    conquistas_por_tribo = conquistas_por_tribo.merge(barbaros_por_tribo, on="conquistador_tribo", how="left").fillna(0)
+    conquistas_por_tribo["barbaros"] = conquistas_por_tribo["barbaros"].astype(int)
     conquistas_por_tribo = conquistas_por_tribo.sort_values(by="total", ascending=False)
 
     col1, col2 = st.columns(2)
@@ -74,9 +83,11 @@ try:
     st.subheader("⚔️ Conquistas de Aldeias de Bárbaros")
     df_barbaros = df[df["conquistado_tribo"] == "Aldeias de Bárbaros"]
 
-    # Por jogador
     barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="total")
     barbaros_por_jogador = barbaros_por_jogador.sort_values(by="total", ascending=False)
+
+    barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="total")
+    barbaros_por_tribo = barbaros_por_tribo.sort_values(by="total", ascending=False)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -84,10 +95,6 @@ try:
         fig5 = px.pie(barbaros_por_jogador, values="total", names="conquistador_nome", title="Distribuição de Conquistas de Bárbaros por Jogador")
         st.plotly_chart(fig5, use_container_width=True)
         st.dataframe(barbaros_por_jogador)
-
-    # Por tribo
-    barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="total")
-    barbaros_por_tribo = barbaros_por_tribo.sort_values(by="total", ascending=False)
 
     with col2:
         st.subheader("Tribo que conquistou Bárbaros")
