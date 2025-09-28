@@ -1,52 +1,42 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Dashboard Conquistas", layout="wide")
+st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
 
-st.title("📊 Dashboard de Conquistas (TWStats)")
+st.title("📊 Dashboard de Conquistas - Tribal Wars")
 
-# --- Carregar CSV ---
-try:
-    df = pd.read_csv("ennoblements.csv")
-except FileNotFoundError:
-    st.error("❌ Arquivo ennoblements.csv não encontrado. Rode primeiro o script Node (ennoblements.js).")
-    st.stop()
+# Upload do CSV
+uploaded_file = st.file_uploader("Carregue o arquivo ennoblements.csv", type="csv")
 
-# --- Sidebar ---
-st.sidebar.header("Filtros")
-conquerors = st.sidebar.multiselect("Filtrar por Conquistador", df["conqueror"].unique())
-tribos_alvo = st.sidebar.multiselect("Filtrar por Tribo Alvo", df["tribo_name"].dropna().unique())
+if uploaded_file:
+    # Carrega os dados
+    df = pd.read_csv(uploaded_file, sep=";")
 
-filtro = df.copy()
-if conquerors:
-    filtro = filtro[filtro["conqueror"].isin(conquerors)]
-if tribos_alvo:
-    filtro = filtro[filtro["tribo_name"].isin(tribos_alvo)]
+    st.subheader("Dados Carregados")
+    st.dataframe(df)
 
-# --- Tabela geral ---
-st.subheader("Resumo por Conquistador")
-totais = (
-    filtro.groupby(["conqueror", "tribo_conqueror"], dropna=False)[["total", "barbaros", "players"]]
-    .max()
-    .reset_index()
-    .sort_values("total", ascending=False)
-)
-st.dataframe(totais, use_container_width=True)
+    # Agrupamento por jogador conquistador
+    conquistas_por_jogador = df.groupby("conquistador_nome").size().reset_index(name="total")
+    conquistas_por_jogador = conquistas_por_jogador.sort_values(by="total", ascending=False)
 
-# --- Tabela por tribo alvo ---
-st.subheader("Conquistas por Tribo Alvo")
-tribos = (
-    filtro.groupby(["conqueror", "tribo_name"], dropna=False)["tribo_count"]
-    .sum()
-    .reset_index()
-    .sort_values("tribo_count", ascending=False)
-)
-st.dataframe(tribos, use_container_width=True)
+    # Agrupamento por tribo conquistadora
+    conquistas_por_tribo = df.groupby("conquistador_tribo").size().reset_index(name="total")
+    conquistas_por_tribo = conquistas_por_tribo.sort_values(by="total", ascending=False)
 
-# --- Gráficos ---
-st.subheader("📈 Ranking de Conquistadores")
-st.bar_chart(totais.set_index("conqueror")["total"])
+    # Layout em colunas
+    col1, col2 = st.columns(2)
 
-st.subheader("🏹 Conquistas por Tribo Alvo")
-st.bar_chart(tribos.set_index("tribo_name")["tribo_count"])
+    with col1:
+        st.subheader("🏆 Conquistas por Jogador")
+        st.bar_chart(conquistas_por_jogador.set_index("conquistador_nome"))
+        st.dataframe(conquistas_por_jogador)
+
+    with col2:
+        st.subheader("🏅 Conquistas por Tribo")
+        st.bar_chart(conquistas_por_tribo.set_index("conquistador_tribo"))
+        st.dataframe(conquistas_por_tribo)
+
+    # Ranking detalhado
+    st.subheader("📋 Detalhamento")
+    st.dataframe(df.sort_values(by="data", ascending=False))
 
