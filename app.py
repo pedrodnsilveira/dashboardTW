@@ -50,12 +50,6 @@ try:
     st.dataframe(resumo)
 
     # -------------------------
-    # Ignorar conquistas do próprio jogador e da própria tribo
-    # -------------------------
-    #df_filtrado = df[~((df["conquistado_nome"] == df["conquistador_nome"]) &
-    #                (df["conquistado_tribo"] == df["conquistador_tribo"]))]
-
-    # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
     # -------------------------
     df_barbaros = df_filtrado[df_filtrado["conquistado_nome"].str.contains("Aldeias de Bárbaros", case=False)]
@@ -84,18 +78,47 @@ try:
     # -------------------------
     # Gráficos de Pizza para Jogador e Tribo
     # -------------------------
+    def top5_com_outros(df, coluna_nome="conquistador_nome", coluna_valor="total", top_n=5):
+        # Ordena pelo valor
+        df_sorted = df.sort_values(by=coluna_valor, ascending=False)
+        
+        # Pega os top_n
+        top = df_sorted.head(top_n)
+        
+        # Soma o restante
+        outros = df_sorted.iloc[top_n:][coluna_valor].sum()
+        
+        # Adiciona linha "Outros" se houver
+        if outros > 0:
+            outros_row = pd.DataFrame({
+                coluna_nome: ["Outros"],
+                coluna_valor: [outros]
+            })
+            top = pd.concat([top, outros_row], ignore_index=True)
+        
+        return top
+
+    # -------------------------
+    # Gráficos de Pizza para Jogador e Tribo (com "Outros")
+    # -------------------------
     col1, col2 = st.columns(2)
+
     with col1:
         st.subheader("🏆 Conquistas por Jogador")
-        fig1 = px.pie(conquistas_por_jogador, values="total", names="conquistador_nome", title="Distribuição de Conquistas por Jogador")
+        df_jogador_plot = top5_com_outros(conquistas_por_jogador, coluna_nome="conquistador_nome", coluna_valor="total", top_n=5)
+        fig1 = px.pie(df_jogador_plot, values="total", names="conquistador_nome",
+                    title="Distribuição de Conquistas por Jogador")
         st.plotly_chart(fig1, use_container_width=True)
-        st.dataframe(conquistas_por_jogador)
+        st.dataframe(df_jogador_plot)
 
     with col2:
         st.subheader("🏅 Conquistas por Tribo")
-        fig2 = px.pie(conquistas_por_tribo, values="total", names="conquistador_tribo", title="Distribuição de Conquistas por Tribo")
+        df_tribo_plot = top5_com_outros(conquistas_por_tribo, coluna_nome="conquistador_tribo", coluna_valor="total", top_n=5)
+        fig2 = px.pie(df_tribo_plot, values="total", names="conquistador_tribo",
+                    title="Distribuição de Conquistas por Tribo")
         st.plotly_chart(fig2, use_container_width=True)
-        st.dataframe(conquistas_por_tribo)
+        st.dataframe(df_tribo_plot)
+
 
     # -------------------------
     # Conquistas de Jogadores por Tribo
