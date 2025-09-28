@@ -10,8 +10,31 @@ CSV_PATH = "ennoblements.csv"
 try:
     df = pd.read_csv(CSV_PATH, sep=";")
 
-    st.subheader("Dados Carregados")
-    st.dataframe(df)
+    #st.subheader("Dados Carregados")
+    #st.dataframe(df)
+
+    # -------------------------
+    # Conquistas por Jogador (incluindo jogadores sem tribo e aldeias bb)
+    # -------------------------
+
+    # Criar coluna ajustada para conquistado_tribo
+    def ajustar_tribo(row):
+        if pd.isna(row["conquistado_tribo"]) or row["conquistado_tribo"] == "":
+            if row["conquistado_nome"] == "Aldeias de Bárbaros":
+                return "Aldeias de Bárbaros"
+            else:
+                return "Sem tribo"
+        return row["conquistado_tribo"]
+
+    df["conquistado_tribo_ajustado"] = df.apply(ajustar_tribo, axis=1)
+
+    # Agrupar
+    resumo = (
+        df.groupby(["conquistador_nome", "conquistador_tribo", "conquistado_tribo_ajustado"])
+        .size()
+        .reset_index(name="quantidade_conquistas")
+    )
+
 
     # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
