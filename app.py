@@ -1,9 +1,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import os, datetime
+
+ts = os.path.getmtime("ennoblements.csv")
 
 st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
-st.title("📊 Dashboard de Conquistas - Tribal Wars")
+st.title("📊 Dashboard de Conquistas - Tribal Wars:Br 134")
+st.subheader("Última atualização: " + str(datetime.datetime.fromtimestamp(ts)))
 
 CSV_PATH = "ennoblements.csv"
 
@@ -28,17 +32,19 @@ try:
 
     df["conquistado_tribo_ajustado"] = df.apply(ajustar_tribo, axis=1)
 
+    # Remover conquistas da própria tribo
+    df_filtrado = df[df["conquistador_tribo"] != df["conquistado_tribo_ajustado"]]
+
     # Agrupar
     resumo = (
-        df.groupby(["conquistador_nome", "conquistador_tribo", "conquistado_tribo_ajustado"])
+        df_filtrado.groupby(["conquistador_nome", "conquistador_tribo", "conquistado_tribo_ajustado"])
         .size()
         .reset_index(name="quantidade_conquistas")
     )
 
     # Mostrar no Streamlit
-    st.title("Resumo de Conquistas por jogador")
+    st.title("Resumo de Conquistas (ignorando própria tribo)")
     st.dataframe(resumo)
-
 
     # -------------------------
     # Filtra conquistas de Aldeias de Bárbaros
