@@ -18,7 +18,7 @@ try:
     # Primeira e última data
     primeira_data = df['data'].min()
     ultima_data = df['data'].max()
-    st.subheader("Período: " + str(primeira_data.strftime("%d/%m/%Y %H:%M:%S")) + " à " + str(ultima_data.strftime("%d/%m/%Y %H:%M:%S"))
+    st.subheader("Período: " + str(primeira_data.strftime("%d/%m/%Y %H:%M:%S")) + " à " + str(ultima_data.strftime("%d/%m/%Y %H:%M:%S")))
 
     # -------------------------
     # Conquistas por Jogador (incluindo jogadores sem tribo e aldeias bb)
