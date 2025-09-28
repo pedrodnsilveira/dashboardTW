@@ -5,12 +5,11 @@ st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
 
 st.title("📊 Dashboard de Conquistas - Tribal Wars")
 
-# Upload do CSV
-uploaded_file = st.file_uploader("Carregue o arquivo ennoblements.csv", type="csv")
+# Lê diretamente o CSV salvo pelo script Node
+CSV_PATH = "ennoblements.csv"
 
-if uploaded_file:
-    # Carrega os dados
-    df = pd.read_csv(uploaded_file, sep=";")
+try:
+    df = pd.read_csv(CSV_PATH, sep=";")
 
     st.subheader("Dados Carregados")
     st.dataframe(df)
@@ -39,4 +38,7 @@ if uploaded_file:
     # Ranking detalhado
     st.subheader("📋 Detalhamento")
     st.dataframe(df.sort_values(by="data", ascending=False))
+
+except FileNotFoundError:
+    st.error(f"Arquivo {CSV_PATH} não encontrado. Execute primeiro o script Node para gerar o CSV.")
 
