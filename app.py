@@ -84,7 +84,8 @@ try:
     st.subheader("⚔️ Conquistas de Aldeias de Bárbaros")
 
     # Por jogador
-    barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="total")
+    #barbaros_por_jogador = df_barbaros.groupby("conquistador_nome").size().reset_index(name="total")
+    barbaros_por_jogador = df_barbaros.groupby(["conquistador_nome", "conquistador_tribo"]).size().reset_index(name="total")
     barbaros_por_jogador = barbaros_por_jogador.sort_values(by="total", ascending=False)
     # Por tribo
     barbaros_por_tribo = df_barbaros.groupby("conquistador_tribo").size().reset_index(name="total")
