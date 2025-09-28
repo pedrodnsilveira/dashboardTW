@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 
 ts = os.path.getmtime("ennoblements.csv")
-dthr = (datetime.datetime.fromtimestamp(ts) - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")
+dthr = (datetime.fromtimestamp(ts) - timedelta(hours=3)).strftime("%d/%m/%Y %H:%M:%S")
 
 st.set_page_config(page_title="Dashboard de Conquistas", layout="wide")
 st.title("📊 Dashboard de Conquistas - Tribal Wars:Br 134")
