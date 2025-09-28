@@ -125,9 +125,6 @@ try:
 
 
 
-
-
-
     # -------------------------
     # Conquistas de Jogadores por Tribo
     # -------------------------
@@ -151,13 +148,13 @@ try:
     # -------------------------
     # Conquistas de Jogadores por Tribo (top 5 por tribo + "Outros")
     # -------------------------
-    st.subheader("👥 Conquistas de Jogadores por Tribo")
+    #st.subheader("👥 Conquistas de Jogadores por Tribo")
     conquistas_jogador_tribo = df.groupby(["conquistador_tribo", "conquistador_nome"]).size().reset_index(name="total")
 
     # Aplicar topN_por_grupo para limitar jogadores por tribo
     conquistas_jogador_tribo_plot = topN_por_grupo(conquistas_jogador_tribo, "conquistador_tribo", "total", top_n=5)
 
-    st.dataframe(conquistas_jogador_tribo_plot.sort_values(by=["conquistador_tribo", "total"], ascending=[True, False]))
+    #st.dataframe(conquistas_jogador_tribo_plot.sort_values(by=["conquistador_tribo", "total"], ascending=[True, False]))
 
     fig3 = px.sunburst(
         conquistas_jogador_tribo_plot,
@@ -166,6 +163,8 @@ try:
         title="Hierarquia de Conquistas: Tribos → Jogadores"
     )
     st.plotly_chart(fig3, use_container_width=True)
+
+
 
 
     # -------------------------
